@@ -1,9 +1,11 @@
-import './App.css';
+import '../style/Game.css';
 import React from 'react';
 import ReactPlayer from "react-player";
-import {Box, TextField, Typography} from "@mui/material";
-import levensteihnDistance from "./levensteihnDistance";
+import {Box, Grid, TextField, Typography} from "@mui/material";
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import ProgressBar from "./ProgressBar";
+import checkGuess from "../utils/guess";
+import ChatBox from "./ChatBox";
 
 const shuffleArray = array => {
   for (let i = array.length - 1; i > 0; i--) {
@@ -39,83 +41,7 @@ const getUrl = (song) => {
   return corsUrlPrefix + "https://itunes.apple.com/us/lookup?id=" + song;
 }
 
-function ProgressBar({title, seconds}) {
-  const progressBar = seconds > 0 ?
-      <Box key={title} className={'progressBarIncreasing'} gridRow={1} gridColumn={1} />
-      : seconds === -5 ?
-          null
-          :
-          <Box key={title} className={'progressBarDecreasing'} gridRow={1} gridColumn={1} />;
-
-  return (
-  <Box
-      height={'1rem'}
-      width={'50%'}
-      display={'flex'}
-      flexDirection={'row'}
-  >
-    <Box display={'grid'} width={'100%'}>
-      <Box className={'progressBarBackground'} gridRow={1} gridColumn={1} />
-      {progressBar}
-    </Box>
-    <Box ml={2} width={'3%'}>
-      <Typography style={{fontSize: '80%', width: '100%'}}>
-        {seconds > -5 ? seconds > 0 ? seconds : 5 + seconds : null}
-      </Typography>
-    </Box>
-  </Box>
-  );
-}
-
-const checkGuess = (guess, title, fullArtists, titleGuessed, artistGuessed) => {
-  title = title.split('(')[0].toLowerCase().trim();
-  fullArtists = fullArtists.split('(')[0].toLowerCase().trim();
-  const artists = fullArtists.split(/[,&]+/).map((artist) => {
-    return artist.trim().replaceAll('.', '');
-  })
-  guess = guess.split('(')[0].toLowerCase().trim();
-
-  let resultList = ["Nope", "Think again", "You can do better", "What?"];
-
-  if (levensteihnDistance(guess, title) < Math.ceil(title.length / 4)) {
-    if (titleGuessed) {
-      resultList = ["You already got the title!"];
-    } else {
-      titleGuessed = true;
-      resultList = ["Indeed!", "Good job!"];
-
-      if (!artistGuessed) {
-        resultList.push(...["Nice, do you also know the artist?", "Good, and what's the artist?", "That's the title!", "You got the title!"])
-      } else {
-        resultList.push(...["Good job, you got all points!", "Nice, you got both the title and artist!"])
-      }
-    }
-  } else {
-    artists.forEach(artist => {
-      if (levensteihnDistance(guess.replaceAll('.', ''), artist) < Math.ceil(artist.length / 4)) {
-        if (artistGuessed) {
-          resultList = ["You already got the artist!"]
-        } else {
-          artistGuessed = true;
-          resultList = ["Indeed!", "Good job!"];
-
-          if (!titleGuessed) {
-            resultList.push(...["Nice, do you also know the title?", "Good, and what's the title?", "That's the artist!", "You got the artist!"])
-          } else {
-            resultList.push(...["Good job, you got all points!", "Nice, you got both the title and artist!"])
-          }
-        }
-      }
-    })
-  }
-
-  // 0 if none guessed, 1 if either guessed, 3 if both guessed
-  const points = Math.max(0, 3 - [!titleGuessed, !artistGuessed].filter(Boolean).length*2)
-
-  return [resultList[Math.floor(Math.random() * resultList.length)], titleGuessed, artistGuessed, points];
-}
-
-class App extends React.Component {
+class Game extends React.Component {
   constructor() {
     super();
 
@@ -125,13 +51,11 @@ class App extends React.Component {
       roundPoints: 0,
       totalPoints: 0
     }
-
-    console.log(this.state.songs)
   }
 
   async componentDidMount() {
     let gameSongs;
-    await import(`./songs${window.location.pathname}.json`).then(songs => gameSongs = Array.from(songs));
+    await import(`../songs${window.location.pathname}.json`).then(songs => gameSongs = Array.from(songs));
     shuffleArray(gameSongs);
 
     this.setState({ songs: gameSongs.slice(0, 10) })
@@ -199,11 +123,12 @@ class App extends React.Component {
     clearInterval(this.interval);
   }
 
+
   render() {
     return (
-        <Box m={10}>
+        <Box p={10}>
           <Box mb={10}>
-            <HomeOutlinedIcon style={{ position: 'absolute', top: '1rem', left: '1rem'}} onClick={() => window.location.href = '/'} />
+            <HomeOutlinedIcon className={'clickable'} style={{ position: 'absolute', top: '1rem', left: '1rem'}} onClick={() => window.location.href = '/'} />
             <ReactPlayer
                 style={{display: 'none'}}
                 url={this.state.previewUrl}
@@ -212,11 +137,11 @@ class App extends React.Component {
             />
             <ProgressBar
                 title={this.state.title}
-                seconds={Math.round(this.state.timeLeft / 100)}
+                seconds={Math.round(this.state.timeLeft / 10) / 10}
             />
           </Box>
           <Typography style={{ marginBottom: '1rem' }}>{this.state.rewardText}</Typography>
-          <TextField variant={'outlined'} label={'Guess here'} disabled={this.state.titleGuessed && this.state.artistGuessed} onKeyDown={(e) => {
+          <TextField autoFocus variant={'outlined'} label={'Guess here'} disabled={this.state.titleGuessed && this.state.artistGuessed} onKeyDown={(e) => {
             if (this.state.title && e.code === "Enter") {
               const [guessText, titleGuessed, artistGuessed, roundPoints] = checkGuess(e.target.value, this.state.title, this.state.artist, this.state.titleGuessed, this.state.artistGuessed);
               this.setState({ rewardText: guessText, titleGuessed: titleGuessed, artistGuessed: artistGuessed, roundPoints: roundPoints, guessedAt: titleGuessed && artistGuessed ? 3000 - this.state.timeLeft : null });
@@ -227,27 +152,39 @@ class App extends React.Component {
             <Typography>Total points: {this.state.totalPoints + this.state.roundPoints}</Typography>
             <Typography>Time: {this.state.guessedAt ? this.state.guessedAt / 100 + "s" : null}</Typography>
           </Box>
-          <Box id={'Results'} sx={{ border: 1 }} mt={3} minHeight={'5rem'}>
-            {this.state.pastSongs.map(song =>
-                <Box key={song.title} m={2} display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
-                  <Box display={'flex'} flexDirection={'row'}>
-                    <img src={song.artworkUrl} alt={song.title}/>
-                    <Box m={2} ml={4}>
-                      <Typography variant={'h5'}>{song.artist}</Typography>
-                      <Typography variant={'h6'}>{song.title}</Typography>
-                    </Box>
-                  </Box>
-                  <Box mr={5} mt={4}>
-                    <Typography variant={'h6'}>
-                      {`${song.points} point${song.points === 1 ? '' : 's'}`}
-                    </Typography>
-                  </Box>
+          <Grid container spacing={4} my={1}>
+            <Grid item xs={6}>
+              <Box id={'Results'} sx={{ border: 1, borderRadius: '10px' }} height={'50vh'} zIndex={1}>
+                <Box mt={1} pb={1} display={'flex'} justifyContent={'center'} sx={{ borderBottom: 1 }} style={{ backgroundColor: 'white' }}>
+                  <Typography variant={'h5'}>Past songs</Typography>
                 </Box>
-            )}
-          </Box>
+                <Box my={1} height={'43vh'} style={{ overflow: 'hidden', overflowY: 'scroll' }} zIndex={-1}>
+                    {this.state.pastSongs.map(song =>
+                      <Box key={song.title} m={2} display={'flex'} flexDirection={'row'} justifyContent={'space-between'}>
+                        <Box display={'flex'} flexDirection={'row'}>
+                          <img src={song.artworkUrl} alt={song.title} style={{ objectFit: 'cover' }} />
+                          <Box m={2} ml={4}>
+                            <Typography variant={'h5'}>{song.artist}</Typography>
+                            <Typography variant={'h6'}>{song.title}</Typography>
+                          </Box>
+                        </Box>
+                        <Box mr={2} mt={4}>
+                          <Typography variant={'h6'}>
+                            {song.points}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item xs={6}>
+              <ChatBox />
+            </Grid>
+          </Grid>
         </Box>
     );
   }
 }
 
-export default App;
+export default Game;

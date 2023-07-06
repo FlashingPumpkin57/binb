@@ -2,9 +2,26 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+::-webkit-scrollbar {
+  width: 10px;
+  background-color: rgba(255,255,255,0);
+  z-index: -1000;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  /*display: none;*/
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background-color: lightgray;
+  border-radius: 10px;
+  z-index: -1000;
+}
+
+.clickable:hover {
+  cursor: pointer;
 }
 
 .App-header {

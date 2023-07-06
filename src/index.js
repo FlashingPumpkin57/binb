@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import './style/index.css';
+import Game from './components/Game';
 import {
   createBrowserRouter, createRoutesFromElements, Link, Outlet,
   Route,
   RouterProvider, Routes,
 } from "react-router-dom";
-import {Box} from "@mui/material";
+import {Grid, Typography} from "@mui/material";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const router = createBrowserRouter(
@@ -16,15 +16,27 @@ const router = createBrowserRouter(
           <Route
               path="/"
               element={
-                <Box display={'flex'} flexDirection={'column'}>
-                  <Link to={"hits"}>Hits</Link>
-                  <Link to={"dutch"}>Dutch</Link>
-                </Box>
+                <Grid direction={'column'} spacing={4} m={4}>
+                  <Grid item xs={6}>
+                    <Link to={'hits'}>
+                      <Typography variant={'h6'}>
+                        Hits
+                      </Typography>
+                    </Link>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Link to={'dutch'}>
+                      <Typography variant={'h6'}>
+                        Dutch
+                      </Typography>
+                    </Link>
+                  </Grid>
+                </Grid>
               }
-              errorElement="Das helemaal geen goede link joh"
+              errorElement={'Das helemaal geen goede link joh'}
           />
-          <Route path="/hits" element={<App />} />
-          <Route path="/dutch" element={<App />} />
+          <Route path="/hits" element={<Game  />} />
+          <Route path="/dutch" element={<Game />} />
         </>
     )
 );
