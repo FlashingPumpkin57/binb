@@ -1,6 +1,12 @@
 .App {
   text-align: center;
 }
+body {
+  /*background-image: url("../images/MelksubLogo.png");*/
+  /*background-repeat: repeat;*/
+  /*background-size: 90vh auto;*/
+  background-color: whitesmoke;
+}
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -15,7 +21,7 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background-color: lightgray;
+  background-color: teal;
   border-radius: 10px;
   z-index: -1000;
 }
@@ -42,7 +48,7 @@
 .progressBarIncreasing, .progressBarDecreasing {
   height: 100%;
   border-radius: 10px;
-  background-color: darkred;
+  background-color: teal;
 }
 
 .progressBarIncreasing {

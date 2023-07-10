@@ -21,22 +21,23 @@ const abbreviations = {
 };
 
 const checkGuess = (guess, title, fullArtists, titleGuessed, artistGuessed) => {
+  if (titleGuessed && artistGuessed) {
+    return ["That's enough, you already have both the title and artist!", titleGuessed, artistGuessed, 3];
+  }
+
   fullArtists = fullArtists.split('(')[0].toLowerCase().trim();
   if (title.includes("feat.")) {
     fullArtists += ", " + title.split("feat.")[1].split(")")[0].trim();
   }
-  console.log(fullArtists)
 
   title = title.split('(')[0].toLowerCase().trim();
   const artists = fullArtists.split(/[,&]+/).map((artist) => {
     return artist.trim().replaceAll('.', '');
   })
-  console.log(artists)
   guess = guess.split('(')[0].toLowerCase().trim();
 
   let resultList = ["Nope", "Think again", "You can do better", "What?"];
 
-  // Math.ceil(title.length / 4)
   if (levensteihnDistance(guess, title) < Math.round(Math.log2(title.length))) {
     if (titleGuessed) {
       resultList = ["You already got the title!"];
@@ -52,7 +53,6 @@ const checkGuess = (guess, title, fullArtists, titleGuessed, artistGuessed) => {
     }
   } else {
     artists.forEach(artist => {
-      // Math.ceil(artist.length / 4)
       if ((guess in abbreviations && artist === abbreviations[guess]) || levensteihnDistance(guess.replaceAll('.', ''), artist) < Math.round(Math.log2(artist.length))) {
         if (artistGuessed) {
           resultList = ["You already got the artist!"]

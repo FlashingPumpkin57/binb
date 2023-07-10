@@ -2,30 +2,8 @@ import React, {useEffect} from "react";
 
 import "../style/ChatRoom.css";
 import useChat from "../utils/chat";
-import {Box, styled, TextField, Typography} from "@mui/material";
-
-//declare the const and add the material UI style
-const CssTextField = styled(TextField)({
-  root: {
-    '& label.Mui-focused': {
-      color: 'white',
-    },
-    '& .MuiInput-underline:after': {
-      borderBottomColor: 'red',
-    },
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': {
-        borderColor: 'black',
-      },
-      '&:hover fieldset': {
-        borderColor: 'black',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: 'yellow',
-      },
-    },
-  },
-});
+import {Box, Typography} from "@mui/material";
+import StyledTextField from "../style/components/StyledTextField";
 
 const ChatBox = () => {
   const roomId = window.location.pathname.split('/')[1]; // Gets roomId from URL
@@ -46,36 +24,38 @@ const ChatBox = () => {
   });
 
   return (
-      <Box height={'25rem'}>
-        <Box height={'100%'} mb={2} sx={{ border: 1, borderRadius: '10px' }}>
-          <Box py={1} display={'flex'} justifyContent={'center'} sx={{ borderBottom: 1 }}>
-            <Typography variant={'h5'}>Chat</Typography>
-          </Box>
-          <Box mt={1} height={'36vh'} style={{overflow: 'hidden', overflowY: 'scroll'}}>
+      <>
+        <Box py={1} mb={1} display={'flex'} justifyContent={'center'} sx={{ border: 1, borderRadius: '10px' }}>
+          <Typography variant={'h5'}>Chat</Typography>
+        </Box>
+        <Box height={'40vh'} mb={1} sx={{ border: 1, borderRadius: '10px' }}>
+          <Box my={1} height={'31vh'} style={{overflow: 'hidden', overflowY: 'scroll'}}>
             {messages.map((message, i) => (
                 <Box
                     key={i}
                     px={3}
                     py={1}
-                    style={{ color: message.ownedByCurrentUser ? 'royalblue' : 'black' }}
+                    style={{ color: message.ownedByCurrentUser ? 'teal' : 'black' }}
                 >
                   <b>{message.senderId}</b>: {message.body }
                 </Box>
             ))}
           </Box>
+          <Box width={'96%'} ml={'2%'}>
+            <StyledTextField
+                value={newMessage}
+                fullWidth
+                onChange={handleNewMessageChange}
+                placeholder={'Write message...'}
+                onKeyDown={(e) => {
+                  if (newMessage.trim().length > 0 && e.code === "Enter") {
+                    handleSendMessage();
+                  }}}
+            />
+          </Box>
         </Box>
-        <TextField
-          value={newMessage}
-          height={'22%'}
-          fullWidth
-          onChange={handleNewMessageChange}
-          placeholder={'Write message...'}
-          onKeyDown={(e) => {
-            if (newMessage.trim().length > 0 && e.code === "Enter") {
-              handleSendMessage();
-            }}}
-        />
-      </Box>
+
+      </>
   );
 };
 

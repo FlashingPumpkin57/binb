@@ -22,7 +22,7 @@ function ProgressBar({title, seconds}) {
           {progressBar}
         </Box>
         <Box ml={2} width={'3%'}>
-          <Typography style={{fontSize: '80%', width: '100%'}}>
+          <Typography style={{fontSize: '80%', width: '100%', color: 'teal', fontWeight: 'bold'}}>
             {seconds > -5 ? seconds > 0 ? seconds : 5 + seconds : null}
           </Typography>
         </Box>
