@@ -14,6 +14,7 @@ const StyledTextField = styled(TextField)({
   },
   '& .MuiOutlinedInput-input': {
     // color: 'teal',
+    backgroundColor: 'white'
   },
   '& .MuiOutlinedInput-root': {
     '& fieldset': {
@@ -21,7 +22,7 @@ const StyledTextField = styled(TextField)({
     },
     // Border color when hovered
     '&:hover fieldset': {
-      // borderColor: 'teal',
+      borderColor: 'teal',
     },
     // Border color when focused
     '&.Mui-focused fieldset': {

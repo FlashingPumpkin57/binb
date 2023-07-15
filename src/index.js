@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './style/index.css';
 import Game from './components/Game';
 import {
-  createBrowserRouter, createRoutesFromElements, Link, Outlet,
+  createBrowserRouter,
+  createRoutesFromElements,
+  Link,
   Route,
-  RouterProvider, Routes,
+  RouterProvider,
 } from "react-router-dom";
 import {Grid, Typography} from "@mui/material";
+import './utils/i18n';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const router = createBrowserRouter(
@@ -35,14 +38,14 @@ const router = createBrowserRouter(
               }
               errorElement={'Das helemaal geen goede link joh'}
           />
-          <Route path="/hits" element={<Game  />} />
-          <Route path="/dutch" element={<Game />} />
+          <Route path="/hits" element={<Game/>}/>
+          <Route path="/dutch" element={<Game/>}/>
         </>
     )
 );
 
 root.render(
-  <>
-    <RouterProvider router={router} />
-  </>
+    <>
+      <RouterProvider router={router}/>
+    </>
 );

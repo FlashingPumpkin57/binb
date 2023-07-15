@@ -13,7 +13,7 @@ function ProgressBar({title, seconds}) {
   return (
       <Box
           height={'1rem'}
-          width={'30%'}
+          // width={'30%'}
           display={'flex'}
           flexDirection={'row'}
       >

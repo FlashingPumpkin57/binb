@@ -1,0 +1,11 @@
+{
+  "game": {
+    "guessHere": "Guess Here",
+    "chat": "Chat",
+    "pastSongs": "Past Songs",
+    "roundPoints": "Points this round",
+    "totalPoints": "Total points",
+    "time": "Time",
+    "writeMessage": "Write message..."
+  }
+}

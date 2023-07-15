@@ -1,0 +1,11 @@
+{
+  "game": {
+    "guessHere": "Hier Raden",
+    "chat": "Chat",
+    "pastSongs": "Vorige Liedjes",
+    "roundPoints": "Punten deze ronde",
+    "totalPoints": "Totaal aantal punten",
+    "time": "Tijd",
+    "writeMessage": "Bericht schrijven..."
+  }
+}

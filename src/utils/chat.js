@@ -11,13 +11,13 @@ const useChat = (roomId) => {
   const [userName, setUserName] = useState("Guest");
   useEffect(() => {
     setUserName(prompt("What's your name?", "Guest"));
-  }, [userName]);
+  }, [roomId]);
 
   useEffect(() => {
 
     // Creates a WebSocket connection
     socketRef.current = socketIOClient(SOCKET_SERVER_URL, {
-      query: { roomId },
+      query: {roomId},
     });
 
     // Listens for incoming messages
@@ -46,7 +46,7 @@ const useChat = (roomId) => {
     });
   };
 
-  return { messages, sendMessage };
+  return {messages, sendMessage};
 };
 
 export default useChat;

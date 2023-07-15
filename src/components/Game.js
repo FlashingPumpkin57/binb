@@ -3,11 +3,14 @@ import React from 'react';
 import ReactPlayer from "react-player";
 import {Box, Grid, Typography} from "@mui/material";
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import LanguageIcon from '@mui/icons-material/Language';
 import ProgressBar from "./ProgressBar";
 import checkGuess from "../utils/guess";
 import ChatBox from "./ChatBox";
 import PastSongs from "./PastSongs";
 import StyledTextField from "../style/components/StyledTextField";
+import {withTranslation} from "react-i18next";
+import GrooveGuesserLogo from "../images/GrooveGuesserLogo.png"
 
 const shuffleArray = array => {
   for (let i = array.length - 1; i > 0; i--) {
@@ -19,7 +22,7 @@ const shuffleArray = array => {
 }
 
 const getSong = (url) => {
-  let response;
+  let response, result;
 
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, false);
@@ -30,17 +33,28 @@ const getSong = (url) => {
       requestResponse.target.response).results[0]);
   xhr.send();
 
-  return {
-    "artist": response.artistName,
-    "title": response.trackName,
-    "previewUrl": response.previewUrl,
-    "artworkUrl": response.artworkUrl100
+  try {
+    result = {
+      "artist": response.artistName,
+      "title": response.trackName,
+      "previewUrl": response.previewUrl,
+      "artworkUrl": response.artworkUrl100
+    }
+  } catch (e) {
+    result = {
+      "artist": "",
+      "title": "",
+      "previewUrl": "",
+      "artworkUrl": ""
+    }
   }
+
+  return result;
 }
 
-const getUrl = (song) => {
+const getUrl = (songId) => {
   const corsUrlPrefix = "https://afternoon-anchorage-07164-401d62698654.herokuapp.com/"
-  return corsUrlPrefix + "https://itunes.apple.com/us/lookup?id=" + song;
+  return corsUrlPrefix + "https://itunes.apple.com/us/lookup?id=" + songId;
 }
 
 class Game extends React.Component {
@@ -58,8 +72,9 @@ class Game extends React.Component {
 
   async componentDidMount() {
     let allSongs;
-    await import(`../songs${window.location.pathname}.json`).then(songs => allSongs = Array.from(songs));
-    this.setState({ allSongs: allSongs })
+    await import(`../songs${window.location.pathname}.json`).then(
+        songs => allSongs = Array.from(songs));
+    this.setState({allSongs: allSongs})
 
     this.interval = setInterval(async () => {
       this.setState((state) => ({timeLeft: state.timeLeft - 1}));
@@ -94,7 +109,8 @@ class Game extends React.Component {
           let newSongs = this.state.songs;
           const currentSong = newSongs.pop();
           const randomSongUrl = getUrl(currentSong);
-          const {artist, title, previewUrl, artworkUrl} = getSong(randomSongUrl);
+          const {artist, title, previewUrl, artworkUrl} = getSong(
+              randomSongUrl);
 
           this.setState({
             timeLeft: 3000,
@@ -103,7 +119,7 @@ class Game extends React.Component {
             previewUrl: previewUrl,
             artworkUrl: artworkUrl,
             songs: newSongs,
-            rewardText: null,
+            rewardText: "\t",
             titleGuessed: false,
             artistGuessed: false,
             guessedAt: null,
@@ -121,41 +137,92 @@ class Game extends React.Component {
   }
 
   render() {
+    const {t} = this.props;
     return (
         <Box p={10} pb={0}>
-          <Box mb={4}>
-            <HomeOutlinedIcon className={'clickable'} style={{ position: 'absolute', top: '1vh', left: '1vh', color: 'teal' }} onClick={() => window.location.href = '/'} />
-            <ReactPlayer
-                style={{display: 'none'}}
-                url={this.state.previewUrl}
-                playing
-                volume={0.1}
-            />
-            <ProgressBar
-                title={this.state.title}
-                seconds={Math.round(this.state.timeLeft / 10) / 10}
-            />
+          <Box mb={4} display={'flex'} justifyContent={'space-between'}>
+            <HomeOutlinedIcon className={'clickable'} style={{
+              position: 'absolute',
+              top: '2vh',
+              left: '2vh',
+              color: 'teal'
+            }} onClick={() => window.location.href = '/'}/>
+            <LanguageIcon className={'clickable'} style={{
+              position: 'absolute',
+              top: '2vh',
+              right: '2vh',
+              color: 'teal'
+            }} onClick={() => this.props.i18n.changeLanguage(
+                this.props.i18n.language === "en" ? "nl" : "en")}/>
+            <Box id={'PlayerAndGuessInput'} width={'30%'} px={5}>
+              <ReactPlayer
+                  style={{display: 'none'}}
+                  url={this.state.previewUrl}
+                  playing
+                  volume={0.1}
+              />
+              <ProgressBar
+                  title={this.state.title}
+                  seconds={Math.round(this.state.timeLeft / 10) / 10}
+              />
+              <Typography style={{
+                marginBottom: '1vh',
+                marginTop: '1vh',
+                height: '2rem'
+              }}>{this.state.rewardText}</Typography>
+              <StyledTextField autoFocus variant={'outlined'}
+                               label={t("game.guessHere",
+                                   {defaultValue: "Guess Here"})}
+                               onKeyDown={(e) => {
+                                 if (e.code === "Enter") {
+                                   if (this.state.title && this.state.timeLeft
+                                       >= 0) {
+                                     const [guessText, titleGuessed, artistGuessed, roundPoints] = checkGuess(
+                                         e.target.value, this.state.title,
+                                         this.state.artist,
+                                         this.state.titleGuessed,
+                                         this.state.artistGuessed);
+                                     this.setState({
+                                       rewardText: guessText,
+                                       titleGuessed: titleGuessed,
+                                       artistGuessed: artistGuessed,
+                                       roundPoints: roundPoints,
+                                       guessedAt: this.state.guessedAt
+                                           ? this.state.guessedAt : titleGuessed
+                                           && artistGuessed ? 3000
+                                               - this.state.timeLeft : null
+                                     });
+                                   }
+                                   e.target.value = null;
+                                 }
+                               }}/>
+              <Box mt={2}>
+                <Typography>{t("game.roundPoints",
+                        {defaultValue: "Points this round"}) + ": "
+                    + this.state.roundPoints}</Typography>
+                <Typography>{t("game.totalPoints",
+                        {defaultValue: "Total points"}) + ": "
+                    + (this.state.totalPoints
+                        + this.state.roundPoints)}</Typography>
+                <Typography>{t("game.time", {defaultValue: "Time"}) + ": "
+                    + (this.state.guessedAt ? this.state.guessedAt / 100 + "s"
+                        : "")}</Typography>
+              </Box>
+            </Box>
+            <img src={GrooveGuesserLogo} alt={'Groove Guesser'} width={'40%'}
+                 style={{
+                   objectFit: 'contain',
+                   position: 'absolute',
+                   right: '15vw'
+                 }}/>
           </Box>
-          <Typography style={{ marginBottom: '1vh' }}>{this.state.rewardText}</Typography>
-          <StyledTextField autoFocus variant={'outlined'} label={'Guess here'} onKeyDown={(e) => {
-            if (e.code === "Enter") {
-              if (this.state.title && this.state.timeLeft >= 0) {
-                const [guessText, titleGuessed, artistGuessed, roundPoints] = checkGuess(e.target.value, this.state.title, this.state.artist, this.state.titleGuessed, this.state.artistGuessed);
-                this.setState({ rewardText: guessText, titleGuessed: titleGuessed, artistGuessed: artistGuessed, roundPoints: roundPoints, guessedAt: this.state.guessedAt ? this.state.guessedAt : titleGuessed && artistGuessed ? 3000 - this.state.timeLeft : null });
-              }
-              e.target.value = null;
-            }}} />
-          <Box mt={2}>
-            <Typography>Points this round: {this.state.roundPoints}</Typography>
-            <Typography>Total points: {this.state.totalPoints + this.state.roundPoints}</Typography>
-            <Typography>Time: {this.state.guessedAt ? this.state.guessedAt / 100 + "s" : null}</Typography>
-          </Box>
-          <Grid container spacing={4} my={1}>
+          <Grid container spacing={4} my={1} position={'absolute'}
+                bottom={'10%'} left={'5vw'} width={'90vw'}>
             <Grid item xs={6}>
-              <PastSongs songs={this.state.pastSongs} />
+              <PastSongs songs={this.state.pastSongs}/>
             </Grid>
             <Grid item xs={6}>
-              <ChatBox />
+              <ChatBox/>
             </Grid>
           </Grid>
         </Box>
@@ -163,4 +230,4 @@ class Game extends React.Component {
   }
 }
 
-export default Game;
+export default withTranslation()(Game);
